@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testify - Test & Answer Key</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">Testify</div>
+      <nav class="nav">
+        <a href="#about">About</a>
+        <a href="#github">GitHub</a>
+        <a href="#rosehack">Rosehack</a>
+        <a href="#logout">Log Out</a>
+      </nav>
+    </header>
+
+    <!-- Test and Answer Key Sections -->
+    <section class="test-output">
+      <div class="output-box">
+        <h2>Test</h2>
+        <div class="output-content" id="test-content">
+          <p>Your generated test will appear here.</p>
+        </div>
+      </div>
+      <div class="output-box">
+        <h2>Answer Key</h2>
+        <div class="output-content" id="answer-key-content">
+          <p>The answer key will appear here.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preferences and Chat Section -->
+    <div class="preferences-chat">
+      <!-- Test Preferences -->
+      <section class="preferences-section">
+        <h3>General Test Preferences</h3>
+        <form>
+          <div class="form-group">
+            <label for="test-name">Test Name:</label>
+            <input type="text" id="test-name" placeholder="Enter Name Here...">
+          </div>
+          <div class="form-group">
+            <label>Overall Difficulty:</label>
+            <div class="difficulty-options">
+              <label><input type="radio" name="difficulty" value="Easy"> Easy</label>
+              <label><input type="radio" name="difficulty" value="Medium"> Medium</label>
+              <label><input type="radio" name="difficulty" value="Hard"> Hard</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Number of...</label>
+            <label><input type="number" placeholder="0"> True/False</label>
+            <label><input type="number" placeholder="0"> Multiple Choice</label>
+            <label><input type="number" placeholder="0"> Short Response</label>
+          </div>
+          <button type="submit" class="btn">Generate</button>
+        </form>
+      </section>
+
+      <!-- Chat Section -->
+      <section class="chat-section">
+        <h3>AI Test Edits</h3>
+        <div class="chat-box" id="chat-box">
+          <p>Chat with Testify here...</p>
+        </div>
+        <input type="text" id="chat-input" placeholder="Type your message here...">
+        <button class="btn" id="chat-send">Send</button>
+      </section>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
