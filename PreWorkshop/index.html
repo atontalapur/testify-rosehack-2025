@@ -15,42 +15,31 @@
       <div class="logo">Testify</div>
       <nav class="nav">
         <a href="#about">About</a>
-        <a href="https://github.com/atontalapur/rosehack-2025">GitHub</a>
-        <a href="https://www.rosehack.com/">Rosehack</a>
-        <a href="/LogIn/index.html">Log Out</a>
+        <a href="https://github.com/atontalapur/rosehack-2025/tree/main">GitHub</a>
+        <a href="https://rosehack.com">Rosehack</a>
+        <a href="../LogIn/index.html">Log Out</a>
       </nav>
     </header>
 
     <!-- File Upload Section -->
-    <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
-      <section class="upload-section">
-        <h2>Upload up to 3 PDF files.</h2>
-        <div class="upload-box" id="upload-container">
-          <input type="file" name="files" id="file-upload-1" accept=".pdf,.zip" hidden>
-          <label for="file-upload-1" class="upload-label">
-            <img src="https://cdn-icons-png.flaticon.com/512/126/126477.png" alt="Upload Icon" class="upload-icon">
+    <section class="upload-section">
+      <h2>Upload a .pdf or .zip file containing only .pdf files here. Max upload of 3 PDF files.</h2>
+      <form id="file-upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+        <div class="upload-box">
+          <input type="file" id="file-upload" name="files" accept=".pdf,.zip" multiple hidden>
+          <label for="file-upload" class="upload-label">
+            <img src="download-icon.png" alt="Upload Icon" class="upload-icon">
             <p>Click to Upload</p>
           </label>
-          <button class="delete-btn" id="delete-file-1" type="button">Delete</button>
+          <div id="file-preview">
+            <p>No files uploaded yet.</p>
+          </div>
         </div>
-      </section>
-
-      <!-- Add File Button -->
-      <section class="add-file-section">
-        <button id="add-file-button" type="button" class="upload-box">Add File</button>
-        <button id="submit-button" type="submit" class="upload-box">Upload</button>
-      </section>
-    </form>
-
-    <!-- Test Output Section -->
-    <section class="test-output" id="test-output">
-      <div class="output-box">
-        <h2>Test</h2>
-        <div class="output-content" id="test-content">
-          <button class="delete-btn" id="download-pdf" type="button">Download PDF</button>
-        </div>
-      </div>
+        <button type="submit" class="btn">Upload</button>
+      </form>
     </section>
+
+    
   </div>
 
   <script>
