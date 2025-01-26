@@ -1,6 +1,7 @@
 import logging
 from flask import Flask, request, jsonify
-from openai import OpenAI
+import openai
+
 
 
 import os
@@ -12,6 +13,14 @@ from reportlab.pdfgen import canvas
 
 
 openai.api_key = os.getenv("OPENAI_API_KEY", "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")
+try:
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": "Hello!"}]
+    )
+    print("OpenAI Response Success!!!!!!!!!!!!!!!!!!!!!!")
+except Exception as e:
+    print("OpenAI Error:", e)
 # client=OpenAI(
 #   api_key=""
 # )
@@ -99,7 +108,7 @@ def upload_and_process():
             {"role": "user", "content": f"{prompt}\n\nContents:\n{combined_text}"}
         ])
 
-        print(response)
+
 
         # Simulated response files (adjust as needed)
         file_1_content = response.choices[0].message.content + "\nThis is File 1."
