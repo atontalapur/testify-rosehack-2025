@@ -1,12 +1,13 @@
 from flask import Flask, send_file, jsonify
 import os
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key='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')
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 
 # Initialize OpenAI client
-openai.api_key = 'your_openai_api_key'
 
 def process_file(file_path):
     try:
@@ -18,11 +19,13 @@ def process_file(file_path):
     # Interact with GPT (customize the prompt as needed)
     prompt = f"Process the following text and generate output:\n\n{file_content}"
     try:
-        response = openai.Completion.create(
-            model="text-davinci-003",  # Use the appropriate model
-            prompt=prompt,
-            max_tokens=1000
-        )
+        response = client.chat.completions.create(
+        model="gpt-4o-mini",  # Use the appropriate model
+        messages=[
+                {"role": "system", "content": "You are analyzing the contents of a file."},
+                {"role": "user", "content": prompt}
+            ],
+        max_tokens=1000)
         generated_text = response.choices[0].text.strip()
     except Exception as e:
         return f"Error generating text: {str(e)}"
@@ -39,7 +42,7 @@ def process_file(file_path):
 
 @app.route('/process-file', methods=['GET'])
 def process_file_route():
-    file_path = 'C:/Users/danis/Downloads/Lab_1.pdf'  # Specify the file path here
+    file_path = '/Users/advaithtontalapur/Downloads'  # Specify the file path here
     output_file_path = process_file(file_path)
     if output_file_path.startswith("Error"):
         return jsonify({"error": output_file_path}), 500
