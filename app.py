@@ -1,32 +1,16 @@
 import logging
 from flask import Flask, request, jsonify
-import openai
-
-
-
 import os
-
 import zipfile
 from werkzeug.utils import secure_filename
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import requests
 
+# Replace with your Assistant API endpoint and key
+ASSISTANT_API_ENDPOINT = "https://api.openai.com/v1/chat/completions"
+ASSISTANT_API_KEY = os.getenv("ASSISTANT_API_KEY", "asst_2M6QdP5q45w033fzMa6zW8CF")
 
-openai.api_key = os.getenv("OPENAI_API_KEY", "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")
-try:
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": "Hello!"}]
-    )
-    print("OpenAI Response Success!!!!!!!!!!!!!!!!!!!!!!")
-except Exception as e:
-    print("OpenAI Error:", e)
-# client=OpenAI(
-#   api_key=""
-# )
-# Set OpenAI API key (replace with your key or set via environment variables)
-
-# Initialize Flask app
 app = Flask(__name__)
 
 # Configure upload folder and allowed file types
@@ -46,7 +30,7 @@ def generate_pdf(content, output_path):
     c = canvas.Canvas(output_path, pagesize=letter)
     width, height = letter
     y = height - 50  # Start 50 units from the top
-    
+
     for line in content.split("\n"):
         if y < 50:  # Move to next page if content overflows
             c.showPage()
@@ -60,13 +44,11 @@ def generate_pdf(content, output_path):
 def test_endpoint():
     return jsonify({"message": "Server is working!"})
 
-
 @app.route('/upload-and-process', methods=['POST'])
 def upload_and_process():
     """
-    Endpoint to upload a ZIP file, extract its contents, process them, and send a prompt to OpenAI.
+    Endpoint to upload a ZIP file, extract its contents, process them, and send a prompt to the Assistant API.
     """
-    test_endpoint()
     try:
         # Check if the request contains a file
         if 'file' not in request.files:
@@ -101,18 +83,29 @@ def upload_and_process():
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                     combined_text += f.read() + "\n"
 
-        # Send the combined text and prompt to OpenAI
-        response = openai.chat.completions.create(model="gpt-4o",
-        messages=[
-            {"role": "system", "content": "You are analyzing the contents of a ZIP file."},
-            {"role": "user", "content": f"{prompt}\n\nContents:\n{combined_text}"}
-        ])
+        # Send the combined text and prompt to the Assistant API
+        headers = {
+            "Authorization": f"Bearer {ASSISTANT_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "assistant-latest",
+            "messages": [
+                {"role": "system", "content": "You are analyzing the contents of a ZIP file."},
+                {"role": "user", "content": f"{prompt}\n\nContents:\n{combined_text}"}
+            ]
+        }
+        response = requests.post(ASSISTANT_API_ENDPOINT, json=payload, headers=headers)
 
+        if response.status_code != 200:
+            return jsonify({"error": "Error from Assistant API", "details": response.json()}), 500
 
+        assistant_response = response.json()
+        response_text = assistant_response["choices"][0]["message"]["content"]
 
         # Simulated response files (adjust as needed)
-        file_1_content = response.choices[0].message.content + "\nThis is File 1."
-        file_2_content = response.choices[0].message.content + "\nThis is File 2."
+        file_1_content = response_text + "\nThis is File 1."
+        file_2_content = response_text + "\nThis is File 2."
 
         # Save response files
         output_file_1 = os.path.join(app.config['UPLOAD_FOLDER'], "output_file_1.pdf")
@@ -120,12 +113,6 @@ def upload_and_process():
 
         generate_pdf(file_1_content, output_file_1)
         generate_pdf(file_2_content, output_file_2)
-
-        # with open(output_file_1, "w") as f1:
-        #     f1.write(file_1_content)
-
-        # with open(output_file_2, "w") as f2:
-        #     f2.write(file_2_content)
 
         # Return paths to the generated files
         return jsonify({
@@ -137,13 +124,9 @@ def upload_and_process():
         logging.exception("Error processing file")
         return jsonify({"error": str(e)}), 500
 
-# @app.route('/')
-# def hello_world():
-#     return 'Hello, World!'
-
 if __name__ == '__main__':
     # Ensure the upload folder exists
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 
-app.run()
+    app.run()
