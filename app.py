@@ -1,84 +1,100 @@
-from flask import Flask, request, jsonify, send_file
+from openai import OpenAI
 import os
-import openai
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
+api_key = os.getenv("OPENAI_API_KEY")
 
-# Initialize OpenAI client
-openai_api_key = "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"
-client = openai.OpenAI(api_key=openai_api_key)
+client = OpenAI(api_key = api_key)
 
-# Create assistant and vector store
 assistant = client.beta.assistants.create(
-    name="Financial Analyst Assistant",
-    instructions="You are an expert financial analyst. Use your knowledge base to answer questions about audited financial statements.",
-    model="gpt-4o",
-    tools=[{"type": "file_search"}],
+name="Questions creator",
+instructions="You are an assistant that creates question papers and answer keys based on provided files. You accept formats like PDF and PPTX, extract relevant content, and generate diverse question types. You will give 10 questions on the given document. You ensure alignment with the material, proper formatting, and include a corresponding answer key.",
+model="gpt-4o",
+tools=[{"type": "file_search"}],
+)
+# Create a vector store caled "Financial Statements"
+vector_store = client.beta.vector_stores.create(name="Lecture Slides")
+
+# Ready the files for upload to OpenAI
+file_paths = [r"C:\Users\danis\OneDrive\Documents\GitHub\rosehack-2025\Test.zip"]
+file_streams = [open(path, "rb") for path in file_paths]
+
+# Use the upload and poll SDK helper to upload the files, add them to the vector store,
+# and poll the status of the file batch for completion.
+file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
+vector_store_id=vector_store.id, files=file_streams
 )
 
-vector_store = client.beta.vector_stores.create(name="Financial Statements")
+# You can print the status and the file counts of the batch to see the result of this operation.
+print(file_batch.status)
+print(file_batch.file_counts)
 
-def process_file(file_path):
-    try:
-        with open(file_path, 'rb') as file:
-            file_content = file.read()
-    except Exception as e:
-        return f"Error reading file: {str(e)}"
+assistant = client.beta.assistants.update(
+assistant_id=assistant.id,
+tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
+)
 
-    # Upload the file to the vector store
-    try:
-        file_streams = [open(file_path, "rb")]
-        file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
-            vector_store_id=vector_store.id, files=file_streams
-        )
-        if file_batch.status != "completed":
-            return f"Error uploading file: {file_batch.status}"
-    except Exception as e:
-        return f"Error uploading file: {str(e)}"
+# Upload the user provided file to OpenAI
+message_file = client.files.create(
+file=open(r"C:\Users\danis\OneDrive\Documents\GitHub\rosehack-2025\Test.zip", "rb"), purpose="assistants"
+)
 
-    # Interact with GPT (customize the prompt as needed)
-    prompt = f"Analyze the following financial document:\n\n{file_content.decode('utf-8', errors='ignore')}"
-    try:
-        response = client.chat_completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are analyzing the contents of a financial document."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=1000
-        )
-        generated_text = response.choices[0].message['content'].strip()
-    except Exception as e:
-        return f"Error generating text: {str(e)}"
+# Create a thread and attach the file to the message
+thread = client.beta.threads.create(
+messages=[
+  {
+    "role": "user",
+    "content": "It is a lecture slides shared with me by my professor. You have to use it to generate questions.",
+    # Attach the new file to the message.
+    "attachments": [
+      { "file_id": message_file.id, "tools": [{"type": "file_search"}] }
+    ],
+  }
+]
+)
 
-    # Save the generated output to a new file
-    output_file_path = "output.txt"
-    try:
-        with open(output_file_path, 'w', encoding='utf-8') as output_file:
-            output_file.write(generated_text)
-    except Exception as e:
-        return f"Error writing output file: {str(e)}"
+# The thread now has a vector store with that file in its tool resources.
+print(thread.tool_resources.file_search)
 
-    return output_file_path
+from typing_extensions import override
+from openai import AssistantEventHandler, OpenAI
 
-@app.route('/process-file', methods=['POST'])
-def process_file_route():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    if file:
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        output_file_path = process_file(file_path)
-        if output_file_path.startswith("Error"):
-            return jsonify({"error": output_file_path}), 500
-        return send_file(output_file_path, as_attachment=True)
+client = OpenAI()
 
-if __name__ == '__main__':
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
-    app.run(debug=True, port=3000)
+class EventHandler(AssistantEventHandler):
+  @override
+  def on_text_created(self, text) -> None:
+      print(f"\nassistant > ", end="", flush=True)
+
+  @override
+  def on_tool_call_created(self, tool_call):
+      print(f"\nassistant > {tool_call.type}\n", flush=True)
+
+  @override
+  def on_message_done(self, message) -> None:
+      # print a citation to the file searched
+      message_content = message.content[0].text
+      annotations = message_content.annotations
+      citations = []
+      for index, annotation in enumerate(annotations):
+          message_content.value = message_content.value.replace(
+              annotation.text, f"[{index}]"
+          )
+          if file_citation := getattr(annotation, "file_citation", None):
+              cited_file = client.files.retrieve(file_citation.file_id)
+              citations.append(f"[{index}] {cited_file.filename}")
+
+      print(message_content.value)
+      print("\n".join(citations))
+
+
+# Then, we use the stream SDK helper
+# with the EventHandler class to create the Run
+# and stream the response.
+
+with client.beta.threads.runs.stream(
+  thread_id=thread.id,
+  assistant_id=assistant.id,
+  instructions="Please address the user as Jane Doe. The user has a premium account.",
+  event_handler=EventHandler(),
+) as stream:
+  stream.until_done()
