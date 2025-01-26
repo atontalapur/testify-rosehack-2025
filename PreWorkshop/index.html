@@ -53,6 +53,32 @@
     </section>
   </div>
 
+  <!-- Test Preferences Section -->
+  <section class="preferences-section">
+    <h3>General Test Preferences</h3>
+    <form>
+      <div class="form-group">
+        <label for="test-name">Test Name:</label>
+        <input type="text" id="test-name" placeholder="Enter Name Here...">
+      </div>
+      <div class="form-group">
+        <label>Overall Difficulty:</label>
+        <div class="difficulty-options">
+          <label><input type="radio" name="difficulty" value="Easy"> Easy</label>
+          <label><input type="radio" name="difficulty" value="Medium"> Medium</label>
+          <label><input type="radio" name="difficulty" value="Hard"> Hard</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Number of...</label>
+        <label><input type="number" placeholder="0"> True/False</label>
+        <label><input type="number" placeholder="0"> Multiple Choice</label>
+        <label><input type="number" placeholder="0"> Short Response</label>
+      </div>
+      <button type="submit" class="btn">Generate</button>
+    </form>
+  </section>
+
   <script>
     let uploadCount = 1;
 
