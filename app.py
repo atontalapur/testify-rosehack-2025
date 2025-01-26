@@ -26,7 +26,8 @@ def process_file(file_path):
                 {"role": "user", "content": prompt}
             ],
         max_tokens=1000)
-        generated_text = response.choices[0].text.strip()
+        generated_text = response.choices[0].message['content'].strip()
+        print("hello " + generated_text)
     except Exception as e:
         return f"Error generating text: {str(e)}"
 
@@ -42,7 +43,7 @@ def process_file(file_path):
 
 @app.route('/process-file', methods=['GET'])
 def process_file_route():
-    file_path = '/Users/advaithtontalapur/Downloads'  # Specify the file path here
+    file_path = r'C:\Users\danis\Downloads\Lab_1.pdf'  # Specify the file path here
     output_file_path = process_file(file_path)
     if output_file_path.startswith("Error"):
         return jsonify({"error": output_file_path}), 500
