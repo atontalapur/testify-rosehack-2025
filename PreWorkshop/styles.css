@@ -101,3 +101,51 @@ body {
     background-color: #336bba;
   }
   
+
+  .test-output {
+    display: flex;
+    justify-content: space-around;
+    padding: 30px 0;
+  }
+  
+  .output-box {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    width: 45%;
+    text-align: center;
+  }
+  
+  .output-content {
+    background: #f0f8ff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 10px;
+  }
+  
+  /* Preferences and Chat Section */
+  .preferences-chat {
+    display: flex;
+    justify-content: space-around;
+    padding: 30px;
+  }
+  
+  .preferences-section,
+  .chat-section {
+    background: #e6f7ff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 45%;
+  }
+  
+  .chat-box {
+    background: white;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    height: 150px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  
