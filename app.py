@@ -1,154 +1,19 @@
-# import logging
-# from flask import Flask, request, jsonify
-# import os
-# import zipfile
-# from openai import OpenAI
-# from werkzeug.utils import secure_filename
-# from reportlab.lib.pagesizes import letter
-# from reportlab.pdfgen import canvas
-# import requests
-
-# # Replace with your Assistant API endpoint and key
-# ASSISTANT_API_ENDPOINT = "https://api.openai.com/v1/chat/completions"
-# ASSISTANT_API_KEY = os.getenv("ASSISTANT_API_KEY", "asst_2M6QdP5q45w033fzMa6zW8CF")
-
-# app = Flask(__name__)
-
-# # Configure upload folder and allowed file types
-# UPLOAD_FOLDER = './uploads'
-# ALLOWED_EXTENSIONS = {'zip', 'pdf', 'pptx'}
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# client = OpenAI()
-
-# # Set up logging
-# logging.basicConfig(level=logging.DEBUG)
-
-# # Utility function to check allowed file types
-# def allowed_file(filename):
-#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# # def generate_pdf(content, output_path):
-# #     """Generate a PDF file with the given content."""
-# #     c = canvas.Canvas(output_path, pagesize=letter)
-# #     width, height = letter
-# #     y = height - 50  # Start 50 units from the top
-
-# #     for line in content.split("\n"):
-# #         if y < 50:  # Move to next page if content overflows
-# #             c.showPage()
-# #             y = height - 50
-# #         c.drawString(50, y, line)
-# #         y -= 15  # Line spacing
-
-# #     c.save()
-
-# @app.route('/test', methods=['GET'])
-# def test_endpoint():
-#     return jsonify({"message": "Server is working!"})
-
-# @app.route('/upload-and-process', methods=['POST'])
-# def upload_and_process():
-#     """
-#     Endpoint to upload a ZIP file, extract its contents, process them, and send a prompt to the Assistant API.
-#     """
-#     try:
-#         # Check if the request contains a file
-#         if 'file' not in request.files:
-#             return jsonify({"error": "No file provided"}), 400
-
-#         file = request.files['file']
-#         prompt = request.form.get('prompt', '')
-
-#         if file.filename == '':
-#             return jsonify({"error": "No selected file"}), 400
-
-#         if not allowed_file(file.filename):
-#             return jsonify({"error": "Invalid file type. Only ZIP files are allowed."}), 400
-
-#         # Save the uploaded file
-#         filename = secure_filename(file.filename)
-#         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#         file.save(file_path)
-        
-#         assistant = client.beta.assistants.create(
-#         name="questionpaper",
-#         instructions="You are an assistant that creates question papers and answer keys based on provided files. You accept formats like PDF and PPTX, extract relevant content, and generate diverse question types. Users can specify the type of questions, the points they carry, question count, difficulty, and focus areas. You ensure alignment with the material, proper formatting, and include a corresponding answer key.",
-#         model="gpt-4o",
-#         tools=[{"type": "file_search"}],
-#         )
-
-#         # Send the combined text and prompt to the Assistant API
-#         headers = {
-#             "Authorization": f"Bearer {ASSISTANT_API_KEY}",
-#             "Content-Type": "application/json"
-#         }
-#         payload = {
-#             "model": "assistant-latest",
-#             "messages": [
-#                 {"role": "system", "content": "You are analyzing the contents of a ZIP file."},
-#                 {"role": "user", "content": f"{prompt}\n\nContents:\n{combined_text}"}
-#             ]
-#         }
-#         response = requests.post(ASSISTANT_API_ENDPOINT, json=payload, headers=headers)
-
-#         if response.status_code != 200:
-#             return jsonify({"error": "Error from Assistant API", "details": response.json()}), 500
-
-#         assistant_response = response.json()
-#         response_text = assistant_response["choices"][0]["message"]["content"]
-
-#         # Simulated response files (adjust as needed)
-#         file_1_content = response_text + "\nThis is File 1."
-#         file_2_content = response_text + "\nThis is File 2."
-
-#         # Save response files
-#         output_file_1 = os.path.join(app.config['UPLOAD_FOLDER'], "output_file_1.pdf")
-#         output_file_2 = os.path.join(app.config['UPLOAD_FOLDER'], "output_file_2.pdf")
-
-#         generate_pdf(file_1_content, output_file_1)
-#         generate_pdf(file_2_content, output_file_2)
-
-#         # Return paths to the generated files
-#         return jsonify({
-#             "message": "File processed successfully.",
-#             "output_files": [output_file_1, output_file_2]
-#         })
-
-#     except Exception as e:
-#         logging.exception("Error processing file")
-#         return jsonify({"error": str(e)}), 500
-
-# if __name__ == '__main__':
-#     # Ensure the upload folder exists
-#     if not os.path.exists(UPLOAD_FOLDER):
-#         os.makedirs(UPLOAD_FOLDER)
-
-#     app.run()
-
-import openai
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, send_file, jsonify
 import os
+import openai
 
-# Initialize Flask App
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'uploads/'
 
-# Set your OpenAI API key
-openai.api_key = "asst_2M6QdP5q45w033fzMa6zW8CF"
+# Initialize OpenAI client
+openai.api_key = 'your_openai_api_key'
 
-# Route for file upload and GPT processing
-@app.route('/process-file', methods=['POST'])
-def process_file():
-    # Check if a file is provided
-    if 'file' not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-
-    # Retrieve the uploaded file
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
-    # Read the file's content
-    file_content = file.read().decode('utf-8')
+def process_file(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
+            file_content = file.read()
+    except Exception as e:
+        return f"Error reading file: {str(e)}"
 
     # Interact with GPT (customize the prompt as needed)
     prompt = f"Process the following text and generate output:\n\n{file_content}"
@@ -160,14 +25,24 @@ def process_file():
         )
         generated_text = response.choices[0].text.strip()
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return f"Error generating text: {str(e)}"
 
     # Save the generated output to a new file
     output_file_path = "output.txt"
-    with open(output_file_path, 'w') as output_file:
-        output_file.write(generated_text)
+    try:
+        with open(output_file_path, 'w', encoding='utf-8') as output_file:
+            output_file.write(generated_text)
+    except Exception as e:
+        return f"Error writing output file: {str(e)}"
 
-    # Return the generated file to the user
+    return output_file_path
+
+@app.route('/process-file', methods=['GET'])
+def process_file_route():
+    file_path = 'C:/Users/danis/Downloads/Lab_1.pdf'  # Specify the file path here
+    output_file_path = process_file(file_path)
+    if output_file_path.startswith("Error"):
+        return jsonify({"error": output_file_path}), 500
     return send_file(output_file_path, as_attachment=True)
 
 if __name__ == '__main__':
