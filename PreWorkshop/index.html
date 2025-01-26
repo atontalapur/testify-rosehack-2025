@@ -72,6 +72,13 @@
         `;
         document.getElementById('upload-container').appendChild(uploadSection);
 
+        // Add event listener for file input change
+        document.getElementById(fileId).addEventListener('change', function (event) {
+          const fileName = event.target.files[0].name;
+          const label = document.querySelector(`label[for="${fileId}"] p`);
+          label.textContent = fileName;
+        });
+
         // Add delete functionality for the new upload box
         document.getElementById(deleteId).addEventListener('click', function () {
           uploadSection.remove();
@@ -106,6 +113,13 @@
       } else {
         alert('Uploading files...');
       }
+    });
+
+    // Add event listener for the initial file input change
+    document.getElementById('file-upload-1').addEventListener('change', function (event) {
+      const fileName = event.target.files[0].name;
+      const label = document.querySelector(`label[for="file-upload-1"] p`);
+      label.textContent = fileName;
     });
   </script>
 </body>
