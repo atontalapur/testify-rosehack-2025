@@ -13,22 +13,22 @@ client = OpenAI(api_key = api_key)
 
 assistant = client.beta.assistants.create(
 name="Questions creator",
-instructions="Objective: Read and analyze all files provided using advanced content extraction tools like file parsing, text scanning, and data interpretation. The files may include various formats such as PDF, PPTX, Word documents, or plain text. Output Requirements: Based on the analyzed content: Generate a minimum of 10 diverse questions and their answers that align with the material. The questions should include: Factual questions (e.g., definitions, facts from the content). Analytical questions (e.g., explain or discuss topics). Application-based questions (e.g., apply concepts from the content). Critical thinking questions (e.g., evaluate or synthesize content ideas). Provide answers to each question with clear explanations. Tools: Utilize: File scanning and content extraction APIs. Contextual understanding and summarization technologies. Vector search for semantic alignment with the content. Formatting: Questions and answers should be numbered and presented in a clear, readable format. Ensure questions cover all key topics or sections of the files. Fallback: If certain files are not readable or extractable, use Python-based OCR or other parsing libraries to interpret the content and create meaningful questions.",
+instructions="Objective: Read and analyze all files provided using advanced content extraction tools like file parsing, text scanning, and data interpretation. The files may include various formats such as PDF, PPTX, Word documents, or plain text. Output Requirements: Based on the analyzed content: Generate a minimum of 10 diverse questions and their answers that align with the material. The questions should include: Factual questions (e.g., definitions, facts from the content). Analytical questions (e.g., explain or discuss topics). Application-based questions (e.g., apply concepts from the content). Critical thinking questions (e.g., evaluate or synthesize content ideas). Provide answers to each question with clear explanations. Tools: Utilize: File scanning and content extraction APIs. Contextual understanding and summarization technologies. Vector search for semantic alignment with the content. Formatting: Questions and answers should be numbered and presented in a clear, readable format. Ensure questions cover all key topics or sections of the files. Fallback: If certain files are not readable or extractable, use Python-based OCR or other parsing libraries to interpret the content and create meaningful questions. Output: Output ONLY the questions and nothing else.",
 model="gpt-4o",
-temperature=1.5,
+temperature=0.1,
 tools=[{"type": "file_search"}],
 )
 
-extracted_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted')
-os.makedirs(extracted_folder, exist_ok=True)
-with zipfile.ZipFile(r"C:\Users\danis\OneDrive\Documents\GitHub\rosehack-2025\Test.zip", 'r') as zip_ref:
-    zip_ref.extractall(extracted_folder)
+# extracted_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted')
+# os.makedirs(extracted_folder, exist_ok=True)
+# with zipfile.ZipFile(r"/Users/advaithtontalapur/Documents/Advaith/rosehack-2025", 'r') as zip_ref:
+#     zip_ref.extractall(extracted_folder)
 
 # Create a vector store caled "Financial Statements"
 vector_store = client.beta.vector_stores.create(name="Lecture Slides")
 
 # Ready the files for upload to OpenAI
-file_paths = [ r"C:\Users\danis\Downloads\W25 Physics40A PreLecture1A.pdf", r"C:\Users\danis\Downloads\W25P40AS20 Lec1A Activities.pdf", r"C:\Users\danis\Downloads\W25 Physics40AS20 Lecture1A.pdf"]
+file_paths = [ r"/Users/advaithtontalapur/Documents/Advaith/rosehack-2025/uploads/extracted/Test/Jan6Econ003.pdf", r"/Users/advaithtontalapur/Documents/Advaith/rosehack-2025/uploads/extracted/Test/Jan8Econ003.pdf", r"/Users/advaithtontalapur/Documents/Advaith/rosehack-2025/uploads/extracted/Test/Jan10Econ003.pdf"]
 file_streams = [open(path, "rb") for path in file_paths]
 
 # Use the upload and poll SDK helper to upload the files, add them to the vector store,
@@ -48,7 +48,7 @@ tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
 
 # Upload the user provided file to OpenAI
 message_file = client.files.create(
-file=open(r"C:\Users\danis\Downloads\Final_Project_Winter2025.pdf", "rb"), purpose="assistants"
+file=open(r"/Users/advaithtontalapur/Downloads/Attendance.pdf", "rb"), purpose="assistants"
 )
 
 # Create a thread and attach the file to the message
