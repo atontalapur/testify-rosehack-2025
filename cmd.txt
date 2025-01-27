@@ -1,3 +1,0 @@
-curl -X POST "http://127.0.0.1:5000/upload-and-process" \
--F "file=@/Users/advaithtontalapur/Documents/Advaith/rosehack-2025/Test.zip" \
--F "prompt=Write Hello in the two files."
