@@ -20,16 +20,10 @@ temperature=0.1,
 tools=[{"type": "file_search"}],
 )
 
-# extracted_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'extracted')
-# os.makedirs(extracted_folder, exist_ok=True)
-# with zipfile.ZipFile(r"/Users/advaithtontalapur/Documents/Advaith/rosehack-2025", 'r') as zip_ref:
-#     zip_ref.extractall(extracted_folder)
-
-# Create a vector store caled "Financial Statements"
 vector_store = client.beta.vector_stores.create(name="Lecture Slides")
 
 # Ready the files for upload to OpenAI
-file_paths = [ r"/Users/advaithtontalapur/Documents/Advaith/rosehack-2025/uploads/extracted/Test/Jan6Econ003.pdf", r"/Users/advaithtontalapur/Documents/Advaith/rosehack-2025/uploads/extracted/Test/Jan8Econ003.pdf", r"/Users/advaithtontalapur/Documents/Advaith/rosehack-2025/uploads/extracted/Test/Jan10Econ003.pdf"]
+file_paths = [ r"path1", r"path2", r"path3"]
 file_streams = [open(path, "rb") for path in file_paths]
 
 # Use the upload and poll SDK helper to upload the files, add them to the vector store,
@@ -49,7 +43,7 @@ tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
 
 # Upload the user provided file to OpenAI
 message_file = client.files.create(
-file=open(r"/Users/advaithtontalapur/Downloads/Attendance.pdf", "rb"), purpose="assistants"
+file=open(r"path4", "rb"), purpose="assistants"
 )
 
 # Create a thread and attach the file to the message
