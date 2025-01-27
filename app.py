@@ -3,13 +3,14 @@ import os
 from flask import Flask, send_file, jsonify
 import zipfile
 from fpdf import FPDF
+import api_key
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 
-api_key = os.getenv("OPENAI_API_KEY")
+#api_key = API_KEY.get_api_key()
 
-client = OpenAI(api_key = api_key)
+client = OpenAI(api_key=api_key)
 
 assistant = client.beta.assistants.create(
 name="Questions creator",
