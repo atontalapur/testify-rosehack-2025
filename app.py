@@ -12,7 +12,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 
-openai.api_key = os.getenv("OPENAI_API_KEY", "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")
+openai.api_key = os.getenv("OPENAI_API_KEY", "Enter your OpenApi key here")
 try:
     response = client.chat.completions.create(
         model="gpt-4",
